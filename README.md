@@ -1,4 +1,4 @@
-# LinearTransformerPytorch
+# LinearTransformer
 Pytorch code for reproducing experiments for the following papers:
 
 [Transformers learn to implement preconditioned gradient descent for in-context learning](https://arxiv.org/abs/2306.00297)  
