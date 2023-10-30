@@ -9,8 +9,8 @@ Pytorch code for reproducing experiments for the following papers:
 - Plotting test loss
 - Displaying matrices at end of training + distance to identity (similar to Figure 4 of [1])
 
-'rotation demonstration-LBFGS.ipynb' contains code for
-- Training a 3 layer Linear Transformer with LBFGS, **covariates have non-identity covariance** (Adam requires about 100x more steps to converge compared to the identity covariance case)
+'rotation demonstration-Adam.ipynb' contains code for
+- Training a 3 layer Linear Transformer with Adam, **covariates have non-identity covariance** (Adam requires about 100x more steps to converge compared to the identity covariance case)
 - Plotting test loss
 - Displaying matrices at end of training + distance to identity (similar to Figure 4 of [1])
 
