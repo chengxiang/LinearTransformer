@@ -5,7 +5,7 @@ Pytorch code for reproducing experiments for the following papers:
 [2] [Linear attention is (maybe) all you need (to understand Transformer optimization)](https://arxiv.org/abs/2310.01082).  *Kwangjun Ahn, Xiang Cheng, Minhak Song, Chulhee Yun, Suvrit Sra, Ali Jadbabaie*
 
 
-<h2>Experiments for <a href=https://arxiv.org/abs/2306.00297>Transformers learn to implement preconditioned gradient descent for in-context learning</h2>
+<h2>Experiments for <a href=https://arxiv.org/abs/2306.00297>Transformers learn to implement preconditioned gradient descent for in-context learning</a></h2>
 
 **'simple demonstration.ipynb'**:
 - Training a 3 layer Linear Transformer with SGD/Adam, **covariates have identity covariance**
