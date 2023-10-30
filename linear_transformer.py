@@ -77,6 +77,13 @@ class Transformer_F(nn.Module):
                 residues = residues + attention(Pij,Qij,Zi)
             Z = Zi + residues
         return Z
+    
+    #enforces top-left-dxd-block sparsity on p
+    def zero_p(self):
+        for i in range(self.n_layer):
+            for j in range(self.n_head):
+                with torch.no_grad():
+                    self.allparam[i,j,0,:,:].zero_()
 
 # evaluate the loss of model, given data (Z,y)
 def in_context_loss(model, Z, y):
@@ -139,4 +146,25 @@ def generate_data(mode='normal',N=20,d=1,B=1000,shape_k=0.1, U=None, D=None):
     X_comb= torch.cat([X,X_test],dim=1)
     y_comb= torch.cat([y,y_zero],dim=1)
     Z= torch.cat([X_comb,y_comb],dim=2)
+    return Z.to(device),y_test.to(device)
+
+def generate_data_inplace(Z, U=None, D=None):
+    
+    
+    B = Z.shape[0]
+    N = Z.shape[1]-1
+    d = Z.shape[2]-1
+    X = Z[:,:,0:-1]
+    X.normal_(0, 1).cuda()
+    W= torch.FloatTensor(B, d).normal_(0,1).cuda()
+    if U is not None:
+        U = U.cuda()
+        D = D.cuda()
+        W = torch.mm(W,torch.inverse(D))
+        W = torch.mm(W,U.t())
+        Z[:,:,0:-1] = torch.einsum('ij, jk, BNk -> BNi', (U,D,X))
+        
+    Z[:,:,-1] = torch.einsum('bi,bni->bn', (W, Z[:,:,0:-1])) #y update
+    y_test = Z[:,-1,-1].detach().clone()
+    Z[:,-1,-1].zero_()
     return Z.to(device),y_test.to(device)
