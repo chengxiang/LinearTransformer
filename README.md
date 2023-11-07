@@ -26,3 +26,41 @@ Pytorch code for reproducing experiments for the following papers:
 
 
 **'linear_transformer.py'** contains definition of the Linear Transformer model, along with some other handy functions.
+
+<h2>Experiments for <a href=https://arxiv.org/abs/2310.01082>Linear attention is (maybe) all you need (to understand Transformer optimization)</a></h2>
+
+### Quck Start
+Setting: training 3 layer linear transformer with Adam/SGD (with clipping), covariates have normal convariance
+
+1. Run `train.ipynb` - training linear transformer
+2. Run `plot_loss.ipynb` - generates loss vs iteration plot
+3. Run `plot_stochastic_noise.ipynb` - generates stochastic gradient noise histogram
+4. Run `plot_condition_number.ipynb` - generates robust 5ondition number plot
+5. Run `plot_smoothness_vs_gradnorm.ipynb` - generates smoothness vs gradienr norm plot
+
+### Hyperparameters
+
+`mode`: method of generating samples (`['normal', 'sphere', 'gamma']`)
+
+`alg`: Optimization algorithm (`['sgd', 'adam']`)
+
+`toclip`: `True` if use clipping algorithm. Otherwise, `False`.
+
+`lr`: learning rate
+
+`sd`: random seed
+
+`max_iters`: maximum number of iterations
+
+`n_layer`: number of layers of linear transformer
+
+`N`: number of in-context samples
+
+### Learning Rates
+
+|Setting (n_layer=3)|SGDM (with clipping)|Adam (with clipping)|
+|-----|-----:|-----:|
+|`mode='normal', N=5`|0.01|0.005|
+|`mode='normal', N=20`|0.02|0.02|
+|`mode='sphere', N=20`|5|0.1|
+|`mode='gamma', N=20`|0.02|0.02|
