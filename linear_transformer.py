@@ -174,8 +174,7 @@ def generate_data_relu(mode='normal', N=20, d=1, B=1000, shape_k=0.1, U=None, D=
     X = torch.FloatTensor(B, N, d).normal_(0, 1).to(device)
     X_test = torch.FloatTensor(B, 1, d).normal_(0, 1).to(device)
 
-    # Additional transformations if mode is 'sphere' or 'gamma'
-    # ... [Similar to the existing generate_data function]
+    # Additional transformations if mode is 'sphere' or 'gamma' [Similar to the existing generate_data function]
 
     # Define a 1-hidden layer ReLU network
     model = nn.Sequential(
@@ -183,16 +182,13 @@ def generate_data_relu(mode='normal', N=20, d=1, B=1000, shape_k=0.1, U=None, D=
         nn.ReLU(),
         nn.Linear(hidden_dim, 1)
     ).to(device)
-
-    # Initialize weights
     model[0].weight.data.normal_(0, 0.1)
     model[2].weight.data.normal_(0, 0.1)
 
     # Generate y values using the ReLU network
     y = model(X.view(-1, d)).view(B, N, 1)
     y_test = model(X_test.view(-1, d)).view(B, 1).squeeze(1)
-
-    # Prepare the combined data
+ 
     y_zero = torch.zeros(B, 1, 1).to(device)
     X_comb = torch.cat([X, X_test], dim=1)
     y_comb = torch.cat([y, y_zero], dim=1)
