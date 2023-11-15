@@ -169,6 +169,20 @@ def generate_data_inplace(Z, U=None, D=None):
     Z[:,-1,-1].zero_()
     return Z.to(device),y_test.to(device)
 
+def generate_data_sine(N=10, B=1000):
+    # Sample amplitude a and phase p for each task
+    a = torch.FloatTensor(B).uniform_(0.1, 5).cuda()
+    p = torch.FloatTensor(B).uniform_(0, math.pi).cuda()
+ 
+    X = torch.FloatTensor(B, N).uniform_(-5, 5).cuda()
+ 
+    Y = a.unsqueeze(1) * torch.sin(p.unsqueeze(1) + X)
+ 
+    X = X.unsqueeze(-1)
+    Y = Y.unsqueeze(-1)
+
+    return X, Y
+
 def generate_data_relu(mode='normal', N=20, d=1, B=1000, shape_k=0.1, U=None, D=None, hidden_dim=100):
     # Generate random input data
     X = torch.FloatTensor(B, N, d).normal_(0, 1).to(device)
