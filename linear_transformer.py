@@ -133,6 +133,10 @@ def generate_data(mode='normal',N=20,d=1,B=1000,shape_k=0.1, U=None, D=None):
         X_test.mul_(gamma_test_scales[:,:,None])
     elif mode =='normal':
         assert True
+    elif mode == 'relu':
+        return generate_data_relu(N=N, d=d, B=B, hidden_dim=d)
+    elif mode == 'mlp':
+        generate_data_mlp(N=N, d=d, B=B, hidden_dim=d)
     else:
         assert False
         
@@ -207,5 +211,34 @@ def generate_data_relu(mode='normal', N=20, d=1, B=1000, shape_k=0.1, U=None, D=
     X_comb = torch.cat([X, X_test], dim=1)
     y_comb = torch.cat([y, y_zero], dim=1)
     Z = torch.cat([X_comb, y_comb], dim=2)
+
+    return Z, y_test
+
+def generate_data_mlp(N=20, d=1, B=1000, hidden_dim=100):
+    # Generate random input data
+    X = torch.FloatTensor(B, N, d).normal_(0, 1).to(device)
+    X_test = torch.FloatTensor(B, 1, d).normal_(0, 1).to(device)
+
+    # Additional transformations if mode is 'sphere' or 'gamma' [Similar to the existing generate_data function]
+
+    # Define a 1-hidden layer ReLU network
+    model = nn.Sequential(
+        nn.Linear(d, hidden_dim),
+        nn.ReLU(),
+        nn.Linear(hidden_dim, d)
+    ).to(device)
+    model[0].weight.data.normal_(0, 1)
+    model[2].weight.data.normal_(0, 1)
+
+    X_MLP = model(X.view(-1, d)).view(B, N, d)
+    X_test_MLP = model(X_test.view(-1, d)).view(B, 1, d)
+
+    W = torch.FloatTensor(B, d).normal_(0,1).cuda()
+    y = torch.einsum('bi,bni->bn', (W, X_MLP)).unsqueeze(2)
+    y_zero = torch.zeros(B,1,1).cuda()
+    y_test = torch.einsum('bi,bni->bn', (W, X_test_MLP)).squeeze(1)
+    X_comb= torch.cat([X_MLP,X_test_MLP],dim=1)
+    y_comb= torch.cat([y,y_zero],dim=1)
+    Z= torch.cat([X_comb,y_comb],dim=2)
 
     return Z, y_test
