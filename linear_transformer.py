@@ -102,14 +102,14 @@ def in_context_loss(model, Z, y):
 # - shape_k: shape parameter of gamma distribution (unused otherwise)
 # - scale parameter: hard coded so that when shape_k = 5/2 and d=5, the generated data is standard normal
 def generate_data(mode='normal',N=20,d=1,B=1000,shape_k=0.1, U=None, D=None):
-    W= torch.FloatTensor(B, d).normal_(0,1).cuda()
-    X = torch.FloatTensor(B, N, d).normal_(0, 1).cuda()
-    X_test = torch.FloatTensor(B,1,d).normal_(0, 1).cuda()
+    W= torch.FloatTensor(B, d).normal_(0,1).to(device)
+    X = torch.FloatTensor(B, N, d).normal_(0, 1).to(device)
+    X_test = torch.FloatTensor(B,1,d).normal_(0, 1).to(device)
     
     if U is not None:
-        U = U.cuda()
-        D = D.cuda()
-        W= torch.FloatTensor(B, d).normal_(0,1).cuda()
+        U = U.to(device)
+        D = D.to(device)
+        W= torch.FloatTensor(B, d).normal_(0,1).to(device)
         W = torch.mm(W,torch.inverse(D))
         W = torch.mm(W,U.t())
     
@@ -119,11 +119,11 @@ def generate_data(mode='normal',N=20,d=1,B=1000,shape_k=0.1, U=None, D=None):
     elif mode == 'gamma':
         # random gamma scaling for X
         gamma_scales = np.random.gamma(shape=shape_k, scale=(10/shape_k)**(0.5), size=[B,N])
-        gamma_scales = torch.Tensor(gamma_scales).cuda()
+        gamma_scales = torch.Tensor(gamma_scales).to(device)
         gamma_scales = gamma_scales.sqrt()
         # random gamma scaling for X_test
         gamma_test_scales = np.random.gamma(shape=shape_k, scale=(10/shape_k)**(0.5), size=[B,1])
-        gamma_test_scales = torch.Tensor(gamma_test_scales).cuda()
+        gamma_test_scales = torch.Tensor(gamma_test_scales).to(device)
         gamma_test_scales = gamma_test_scales.sqrt()
         # normalize to unit norm
         X.div_(X.norm(p=2,dim=2)[:,:,None])
@@ -145,7 +145,7 @@ def generate_data(mode='normal',N=20,d=1,B=1000,shape_k=0.1, U=None, D=None):
         X_test = torch.einsum('ij, jk, BNk -> BNi', (U,D,X_test))
         
     y = torch.einsum('bi,bni->bn', (W, X)).unsqueeze(2)
-    y_zero = torch.zeros(B,1,1).cuda()
+    y_zero = torch.zeros(B,1,1).to(device)
     y_test = torch.einsum('bi,bni->bn', (W, X_test)).squeeze(1)
     X_comb= torch.cat([X,X_test],dim=1)
     y_comb= torch.cat([y,y_zero],dim=1)
@@ -159,11 +159,11 @@ def generate_data_inplace(Z, U=None, D=None):
     N = Z.shape[1]-1
     d = Z.shape[2]-1
     X = Z[:,:,0:-1]
-    X.normal_(0, 1).cuda()
-    W= torch.FloatTensor(B, d).normal_(0,1).cuda()
+    X.normal_(0, 1).to(device)
+    W= torch.FloatTensor(B, d).normal_(0,1).to(device)
     if U is not None:
-        U = U.cuda()
-        D = D.cuda()
+        U = U.to(device)
+        D = D.to(device)
         W = torch.mm(W,torch.inverse(D))
         W = torch.mm(W,U.t())
         Z[:,:,0:-1] = torch.einsum('ij, jk, BNk -> BNi', (U,D,X))
@@ -175,10 +175,10 @@ def generate_data_inplace(Z, U=None, D=None):
 
 def generate_data_sine(N=10, B=1000):
     # Sample amplitude a and phase p for each task
-    a = torch.FloatTensor(B).uniform_(0.1, 5).cuda()
-    p = torch.FloatTensor(B).uniform_(0, math.pi).cuda()
+    a = torch.FloatTensor(B).uniform_(0.1, 5).to(device)
+    p = torch.FloatTensor(B).uniform_(0, math.pi).to(device)
  
-    X = torch.FloatTensor(B, N).uniform_(-5, 5).cuda()
+    X = torch.FloatTensor(B, N).uniform_(-5, 5).to(device)
  
     Y = a.unsqueeze(1) * torch.sin(p.unsqueeze(1) + X)
  
@@ -233,9 +233,9 @@ def generate_data_mlp(N=20, d=1, B=1000, hidden_dim=100):
     X_MLP = model(X.view(-1, d)).view(B, N, d)
     X_test_MLP = model(X_test.view(-1, d)).view(B, 1, d)
 
-    W = torch.FloatTensor(B, d).normal_(0,1).cuda()
+    W = torch.FloatTensor(B, d).normal_(0,1).to(device)
     y = torch.einsum('bi,bni->bn', (W, X_MLP)).unsqueeze(2)
-    y_zero = torch.zeros(B,1,1).cuda()
+    y_zero = torch.zeros(B,1,1).to(device)
     y_test = torch.einsum('bi,bni->bn', (W, X_test_MLP)).squeeze(1)
     X_comb= torch.cat([X_MLP,X_test_MLP],dim=1)
     y_comb= torch.cat([y,y_zero],dim=1)
