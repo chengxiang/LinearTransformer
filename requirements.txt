@@ -2,4 +2,3 @@ ipykernel
 torch
 numpy
 matplotlib
-pre-commit
