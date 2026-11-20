@@ -1,5 +1,5 @@
 """Shared configuration, training, evaluation, and plotting helpers for
-cs_886_experiments.ipynb."""
+the experiment notebooks (regular_experiments.ipynb, etc.)."""
 
 import os
 import time
