@@ -147,9 +147,10 @@ def in_context_loss(model, Z, y):
     diff = output[:,N,d] + y
 
     # Restriction to ensure that differences don't overflow and cause infinite loss
-    clamped_diff = torch.nan_to_num(torch.clamp(diff, -5, 5), nan=0.0)
+    # clamped_diff = torch.nan_to_num(torch.clamp(diff, -5, 5), nan=0.0)
 
-    loss = ((clamped_diff)**2).mean()
+    # loss = ((clamped_diff)**2).mean()
+    loss = ((diff)**2).mean()
 
     return loss
         

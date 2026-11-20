@@ -71,8 +71,13 @@ def build_transformer(model_type, count, head_count, d, var, attention_type='lin
     return model_class(count, head_count, d, var, activation=activation)
 
 
-# a convenience function for taking a step and clipping
-def clip_and_step(allparam, optimizer, clip_r = None):
+def step(allparam, optimizer, clip_r=None):
+    """Take an optimizer step, optionally clipping the gradient norm first.
+
+    With `clip_r=None` (default) no clipping is applied. Otherwise the gradient
+    is rescaled in place so its norm is at most `clip_r`. The step is skipped if
+    the gradient norm is not finite. Returns the pre-clipping gradient norm.
+    """
     grad_all = allparam.grad
     norm_p = grad_all.norm().item()
 
@@ -88,9 +93,12 @@ def clip_and_step(allparam, optimizer, clip_r = None):
 
 def run_experiment_suite(seeds, n_layers_loops, model_types, filename, context_lengths=None,
                          data_modes: list[DataMode] = None, head_counts: list[int] | None = None,
-                         attention_type='linear'):
+                         attention_type='linear', clip=True):
     """
     Train every requested run and save all histories to `filename`.
+
+    `clip=True` clips gradient norms at the module-level `clip_r`; pass
+    `clip=False` to train without clipping.
 
     `context_lengths` defaults to [N], and `data_modes` defaults to [normal_data_mode].
     `head_counts` defaults to [n_head]. `attention_type` selects 'linear' (default)
@@ -113,6 +121,8 @@ def run_experiment_suite(seeds, n_layers_loops, model_types, filename, context_l
 
     if attention_type not in {'linear', 'softmax'}:
         raise ValueError(f'Unsupported attention type: {attention_type}')
+
+    run_clip_r = clip_r if clip else None
 
     base_keys = [(seed, count, model_type, context_length, data_mode, head_count)
                  for seed in seeds
@@ -159,7 +169,7 @@ def run_experiment_suite(seeds, n_layers_loops, model_types, filename, context_l
 
             loss.backward()
 
-            grad_norm = clip_and_step(model.allparam, optimizer, clip_r=clip_r)
+            grad_norm = step(model.allparam, optimizer, clip_r=run_clip_r)
 
             if not np.isfinite(grad_norm):
                 print(f'[DEBUG] [Norm]: infinite gradient norm at iteration {t}.')
